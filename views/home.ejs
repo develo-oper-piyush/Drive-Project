@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" href="/favicon3.png" type="image/x-icon" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <link
+            href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css"
+            rel="stylesheet"
+        />
+
+        <title>Dashboard</title>
+    </head>
+    <body
+        class="m-0 p-0 flex justify-center items-center box-border font-gilroy font-bold select-none w-screen h-screen bg-[#272727] relative"
+    >
+        <!-- User Info Section -->
+        <div
+            class="absolute w-full top-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
+        >
+            <a
+                href="/user/profile"
+                class="flex items-center gap-3 absolute left-[75%] select-text rounded-lg px-4 py-2 transition-all cursor-pointer duration-300 ease-in-out hover:shadow-xl border border-gray-700 hover:scale-105 hover:border-emerald-600"
+                title="View Profile"
+            >
+                <div
+                    class="w-10 h-10 bg-emerald-700 rounded-full flex items-center justify-center text-white text-lg uppercase"
+                >
+                    <%= user.username.charAt(0) %>
+                </div>
+                <div class="text-gray-200">
+                    <p class="text-sm font-bold"><%= user.username %></p>
+                    <p class="text-xs text-gray-400"><%= user.email %></p>
+                </div>
+            </a>
+            <!-- File Count Display -->
+            <div
+                class="mt-2 flex relative left-2 top-5 items-center gap-2 text-gray-400 text-sm"
+            >
+                <span
+                    class="<%= fileCount >= maxFiles ? 'text-red-400' : 'text-emerald-400' %>"
+                >
+                    <%= fileCount %>/<%= maxFiles %> files uploaded
+                </span>
+                <!-- Info Button -->
+                <div class="relative group">
+                    <button
+                        class="w-5 h-5 rounded-full bg-gray-700 text-gray-300 text-xs flex items-center justify-center hover:bg-gray-600 cursor-help"
+                    >
+                        ?
+                    </button>
+                    <!-- Tooltip -->
+                    <div
+                        class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-gray-800 text-gray-200 text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 cursor-text select-text"
+                    >
+                        <p class="font-bold mb-1">📋 Storage Limits:</p>
+                        <p>• Max <%= maxFiles %> files per user</p>
+                        <p>• Max <%= maxFileSize %>MB per file</p>
+                        <div
+                            class="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"
+                        ></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logout button div -->
+        <div class="absolute top-10 right-10">
+            <a
+                href="/user/logout"
+                class="cursor-pointer bg-red-700 hover:bg-red-600 border border-red-800 text-gray-200 text-sm rounded-md shadow-xl px-4 py-2 transition-all duration-200 active:scale-90 flex items-center gap-2"
+            >
+                <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 15 15"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        d="M3 1C2.44771 1 2 1.44772 2 2V13C2 13.5523 2.44772 14 3 14H10.5C10.7761 14 11 13.7761 11 13.5C11 13.2239 10.7761 13 10.5 13H3V2L10.5 2C10.7761 2 11 1.77614 11 1.5C11 1.22386 10.7761 1 10.5 1H3ZM12.6036 4.89645C12.4083 4.70118 12.0917 4.70118 11.8964 4.89645C11.7012 5.09171 11.7012 5.40829 11.8964 5.60355L13.2929 7H6.5C6.22386 7 6 7.22386 6 7.5C6 7.77614 6.22386 8 6.5 8H13.2929L11.8964 9.39645C11.7012 9.59171 11.7012 9.90829 11.8964 10.1036C12.0917 10.2988 12.4083 10.2988 12.6036 10.1036L14.8536 7.85355C15.0488 7.65829 15.0488 7.34171 14.8536 7.14645L12.6036 4.89645Z"
+                        fill="currentColor"
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                    ></path>
+                </svg>
+                Logout
+            </a>
+        </div>
+
+        <!-- Upload button div -->
+        <div
+            class="flex flex-col justify-center text-gray-200 absolute top-10 left-10"
+        >
+            <label
+                class="block ml-1 mb-2.5 text-sm font-medium text-heading"
+                for="file_input"
+                >Upload file</label
+            >
+            <button
+                class="cursor-pointer bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block shadow-xs placeholder:text-body rounded-md bg-emerald-800 hover:bg-emerald-600 active:scale-90 transition-all duration-200 p-2 <%= fileCount >= maxFiles ? 'opacity-50 cursor-not-allowed' : '' %>"
+                aria-describedby="file_input_help"
+                onclick="<%= fileCount >= maxFiles ? 'alert(\'Maximum file limit reached!\')' : 'showPopup()' %>"
+                id="file_input"
+            >
+                Upload file
+            </button>
+            <p
+                class="mt-1 ml-1 text-sm text-gray-500 dark:text-gray-300"
+                id="file_input_help"
+            >
+                Max <%= maxFileSize %>MB per file
+            </p>
+        </div>
+
+        <!-- File Upload Pop Up -->
+        <!-- enctype has to be provided for uploading files in a form to get data -->
+        <div class="hidden pop-up w-screen h-screen absolute z-10">
+            <form
+                action="/upload-file"
+                method="post"
+                enctype="multipart/form-data"
+                onsubmit="return handleForm(event)"
+            >
+                <div
+                    class="flex items-center justify-center w-screen h-screen absolute top-0 left-0 backdrop-blur-md text-gray-200"
+                >
+                    <label
+                        for="dropzone-file"
+                        class="flex flex-col items-center justify-center w-1/2 h-1/2 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-lg cursor-pointer hover:bg-neutral-tertiary-medium"
+                    >
+                        <div
+                            class="flex flex-col items-center justify-center text-body pt-5 pb-6"
+                        >
+                            <svg
+                                class="w-8 h-8 mb-4"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke="currentColor"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
+                                />
+                            </svg>
+                            <p class="mb-2 text-sm">
+                                <span class="font-semibold"
+                                    >Click to upload</span
+                                >
+                                or drag and drop
+                            </p>
+                            <p class="text-xs">
+                                SVG, PNG, JPG or GIF (MAX. 800x400px)
+                            </p>
+                        </div>
+                        <input
+                            id="dropzone-file"
+                            name="file"
+                            type="file"
+                            class="hidden"
+                        />
+                    </label>
+                </div>
+                <button
+                    class="absolute top-[76%] left-[26%] text-gray-200 rounded-md p-1 ring-1 ring-slate-500 cursor-pointer bg-emerald-800 flex justify-center items-center gap-1 hover:bg-emerald-600 active:scale-90 transition-all duration-200"
+                    type="submit"
+                >
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 15 15"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M7.81825 1.18188C7.64251 1.00615 7.35759 1.00615 7.18185 1.18188L4.18185 4.18188C4.00611 4.35762 4.00611 4.64254 4.18185 4.81828C4.35759 4.99401 4.64251 4.99401 4.81825 4.81828L7.05005 2.58648V9.49996C7.05005 9.74849 7.25152 9.94996 7.50005 9.94996C7.74858 9.94996 7.95005 9.74849 7.95005 9.49996V2.58648L10.1819 4.81828C10.3576 4.99401 10.6425 4.99401 10.8182 4.81828C10.994 4.64254 10.994 4.35762 10.8182 4.18188L7.81825 1.18188ZM2.5 9.99997C2.77614 9.99997 3 10.2238 3 10.5V12C3 12.5538 3.44565 13 3.99635 13H11.0012C11.5529 13 12 12.5528 12 12V10.5C12 10.2238 12.2239 9.99997 12.5 9.99997C12.7761 9.99997 13 10.2238 13 10.5V12C13 13.104 12.1062 14 11.0012 14H3.99635C2.89019 14 2 13.103 2 12V10.5C2 10.2238 2.22386 9.99997 2.5 9.99997Z"
+                            fill="currentColor"
+                            fill-rule="evenodd"
+                            clip-rule="evenodd"
+                        ></path>
+                    </svg>
+                    Upload file
+                </button>
+                <button
+                    type="button"
+                    class="absolute top-[20%] left-[75%] text-gray-200 rounded-md p-1 ring-1 ring-slate-500 cursor-pointer bg-red-700 flex justify-center items-center gap-1 hover:bg-red-600 active:scale-90 transition-all duration-200"
+                    onclick="closePopup()"
+                >
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 15 15"
+                        fill="none"
+                        stroke="2"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z"
+                            fill="currentColor"
+                            fill-rule="evenodd"
+                            clip-rule="evenodd"
+                        ></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <div
+            class="dot animate-ping hidden bg-red-600 w-2 h-2 absolute left-[74%] top-2/9 rounded-full z-20"
+        ></div>
+        <div
+            class="dot-2 hidden bg-red-600 w-2 h-2 absolute left-[74%] top-2/9 rounded-full z-20"
+        ></div>
+
+        <!-- Files Display Section -->
+        <div
+            class="w-full h-full flex flex-col items-center justify-start p-10 pt-32 overflow-y-auto"
+        >
+            <h2 class="text-3xl font-bold text-gray-200 mb-4">🗃️ Your Files</h2>
+
+            <!-- Filter Section -->
+            <% if (files && files.length > 0) { %>
+            <div class="flex flex-wrap gap-3 mb-6 justify-center">
+                <select
+                    id="filter-type"
+                    onchange="applyFilters()"
+                    class="bg-gray-700 text-gray-200 text-sm rounded-md px-3 py-2 ring-slate-500 ring-1 focus:border-emerald-500 focus:outline-none cursor-pointer border-none"
+                >
+                    <option value="all">All Types</option>
+                    <option value="image">Images</option>
+                    <option value="document">Documents</option>
+                    <option value="video">Videos</option>
+                    <option value="audio">Audio</option>
+                    <option value="other">Other</option>
+                </select>
+                <select
+                    id="filter-sort"
+                    onchange="applyFilters()"
+                    class="bg-gray-700 ring-slate-500 ring-1 shadow-2xs outline-none text-gray-200 text-sm rounded-md px-3 py-2 border-none focus:border-emerald-500 focus:outline-none cursor-pointer"
+                >
+                    <option value="name-asc">Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                    <option value="date-newest">Newest First</option>
+                    <option value="date-oldest">Oldest First</option>
+                    <option value="size-largest">Largest First</option>
+                    <option value="size-smallest">Smallest First</option>
+                </select>
+                <button
+                    onclick="resetFilters()"
+                    class="cursor-pointer ring-slate-500 ring-1 shadow-2xs active:scale-90 bg-gray-600 hover:bg-gray-500 text-gray-200 text-sm rounded-md px-3 py-2 transition-all duration-200"
+                >
+                    Reset
+                </button>
+            </div>
+            <% } %> <% if (files && files.length > 0) { %>
+            <div
+                id="files-grid"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl"
+            >
+                <% files.forEach(function(file) { %>
+                <div
+                    id="file-<%= file.name.replace(/[^a-zA-Z0-9]/g, '-') %>"
+                    class="file-card shadow-xs cursor-pointer hover:shadow-gray-500 duration-300 transition-all ease-in-out bg-neutral-secondary-medium border-2 border-dashed border-gray-200 rounded-lg p-5 hover:shadow-lg"
+                    data-name="<%= file.name %>"
+                    data-created="<%= file.createdAt %>"
+                    data-size="<%= file.size %>"
+                    data-type="<%= file.mimetype %>"
+                >
+                    <div class="flex items-center justify-between mb-3">
+                        <h3
+                            class="file-name cursor-text text-gray-200 font-semibold text-sm truncate flex-1 select-text"
+                            title="<%= file.name %>"
+                        >
+                            <%= file.name %>
+                        </h3>
+                        <!-- Rename button -->
+                        <button
+                            onclick="showRenameModal('<%= file.name %>')"
+                            class="ml-2 text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer"
+                            title="Rename file"
+                        >
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 15 15"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M11.8536 1.14645C11.6583 0.951184 11.3417 0.951184 11.1465 1.14645L3.71455 8.57836C3.62459 8.66832 3.55263 8.77461 3.50251 8.89155L2.04044 12.303C1.9599 12.491 2.00189 12.709 2.14646 12.8536C2.29103 12.9981 2.50905 13.0401 2.69697 12.9596L6.10847 11.4975C6.2254 11.4474 6.3317 11.3754 6.42166 11.2855L13.8536 3.85355C14.0488 3.65829 14.0488 3.34171 13.8536 3.14645L11.8536 1.14645ZM4.42166 9.28547L11.5 2.20711L12.7929 3.5L5.71455 10.5784L4.21924 11.2192L3.78081 10.7808L4.42166 9.28547Z"
+                                    fill="currentColor"
+                                    fill-rule="evenodd"
+                                    clip-rule="evenodd"
+                                ></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- File info -->
+                    <div
+                        class="text-xs cursor-text select-text text-gray-400 mb-3"
+                    >
+                        <% if (file.size) { %>
+                        <span><%= (file.size / 1024).toFixed(1) %> KB</span>
+                        <% } %>
+                    </div>
+
+                    <div class="flex gap-2 mt-4">
+                        <!-- Open File Button -->
+                        <a
+                            href="<%= file.url %>"
+                            target="_blank"
+                            class="flex-1 bg-emerald-800 shadow-xl hover:bg-emerald-600 text-gray-200 text-sm rounded-md p-2 text-center transition-all duration-200 active:scale-95"
+                        >
+                            Open
+                        </a>
+
+                        <!-- Delete File Button -->
+                        <button
+                            onclick="deleteFile('<%= file.name %>')"
+                            class="flex-1 bg-red-700 hover:bg-red-600 text-gray-200 text-sm rounded-md p-2 transition-all duration-200 active:scale-95 cursor-pointer shadow-xl"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+            <% } else { %>
+            <div id="empty-state" class="text-center text-gray-400">
+                <svg
+                    class="w-20 h-20 mx-auto mb-4 opacity-50 z-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    ></path>
+                </svg>
+                <p class="text-lg">No files uploaded yet</p>
+                <p class="text-sm mt-2">Click "Upload file" to get started</p>
+            </div>
+            <% } %>
+        </div>
+
+        <script>
+            // Store original file order
+            let originalFiles = [];
+
+            const showPopup = () => {
+                const ele = document.querySelector(".pop-up");
+                const dot = document.querySelector(".dot");
+                const dot2 = document.querySelector(".dot-2");
+                dot.classList.remove("hidden", "bg-emerald-600");
+                dot2.classList.remove("hidden", "bg-emerald-600");
+                dot.classList.add("bg-red-600");
+                dot2.classList.add("bg-red-600");
+                ele.classList.remove("hidden");
+            };
+
+            const closePopup = () => {
+                const ele = document.querySelector(".pop-up");
+                const dot = document.querySelector(".dot");
+                const dot2 = document.querySelector(".dot-2");
+                const inp = document.querySelector("#dropzone-file");
+                dot.classList.add("hidden");
+                dot2.classList.add("hidden");
+                ele.classList.add("hidden");
+                inp.value = ""; // Reset file input
+            };
+
+            const handleForm = (e) => {
+                const inp = document.querySelector("#dropzone-file");
+                const files = inp.files;
+
+                // Prevent submission if no file is selected
+                if (!files || files.length === 0) {
+                    e.preventDefault();
+                    alert("Please select a file before uploading.");
+                    return false;
+                }
+
+                // Check file size (5MB = 5 * 1024 * 1024 bytes)
+                const maxSize = 5 * 1024 * 1024;
+                if (files[0].size > maxSize) {
+                    e.preventDefault();
+                    alert(
+                        "File size exceeds 5MB limit. Please select a smaller file."
+                    );
+                    return false;
+                }
+
+                // Allow submission
+                return true;
+            };
+
+            // Filter functions
+            const getFileType = (mimetype) => {
+                if (!mimetype) return "other";
+                if (mimetype.startsWith("image/")) return "image";
+                if (mimetype.startsWith("video/")) return "video";
+                if (mimetype.startsWith("audio/")) return "audio";
+                if (
+                    mimetype.includes("pdf") ||
+                    mimetype.includes("document") ||
+                    mimetype.includes("text") ||
+                    mimetype.includes("word") ||
+                    mimetype.includes("excel") ||
+                    mimetype.includes("spreadsheet")
+                )
+                    return "document";
+                return "other";
+            };
+
+            const applyFilters = () => {
+                const typeFilter =
+                    document.getElementById("filter-type")?.value || "all";
+                const sortFilter =
+                    document.getElementById("filter-sort")?.value || "name-asc";
+                const filesGrid = document.getElementById("files-grid");
+
+                if (!filesGrid) return;
+
+                const fileCards = Array.from(
+                    filesGrid.querySelectorAll(".file-card")
+                );
+
+                // Filter by type
+                fileCards.forEach((card) => {
+                    const mimetype = card.dataset.type;
+                    const fileType = getFileType(mimetype);
+
+                    if (typeFilter === "all" || fileType === typeFilter) {
+                        card.style.display = "block";
+                    } else {
+                        card.style.display = "none";
+                    }
+                });
+
+                // Sort visible cards
+                const visibleCards = fileCards.filter(
+                    (card) => card.style.display !== "none"
+                );
+
+                visibleCards.sort((a, b) => {
+                    switch (sortFilter) {
+                        case "name-asc":
+                            return a.dataset.name.localeCompare(b.dataset.name);
+                        case "name-desc":
+                            return b.dataset.name.localeCompare(a.dataset.name);
+                        case "date-newest":
+                            return (
+                                new Date(b.dataset.created) -
+                                new Date(a.dataset.created)
+                            );
+                        case "date-oldest":
+                            return (
+                                new Date(a.dataset.created) -
+                                new Date(b.dataset.created)
+                            );
+                        case "size-largest":
+                            return (
+                                parseInt(b.dataset.size) -
+                                parseInt(a.dataset.size)
+                            );
+                        case "size-smallest":
+                            return (
+                                parseInt(a.dataset.size) -
+                                parseInt(b.dataset.size)
+                            );
+                        default:
+                            return 0;
+                    }
+                });
+
+                // Reorder DOM
+                visibleCards.forEach((card) => filesGrid.appendChild(card));
+            };
+
+            const resetFilters = () => {
+                const typeFilter = document.getElementById("filter-type");
+                const sortFilter = document.getElementById("filter-sort");
+                if (typeFilter) typeFilter.value = "all";
+                if (sortFilter) sortFilter.value = "name-asc";
+                applyFilters();
+            };
+
+            // Rename functionality
+            const showRenameModal = (fileName) => {
+                const displayName = fileName.replace(/^\d+-/, ""); // Remove timestamp prefix for display
+                const newName = prompt(
+                    `Enter new name for "${displayName}":`,
+                    displayName
+                );
+
+                if (newName && newName !== displayName) {
+                    renameFile(fileName, newName);
+                }
+            };
+
+            const renameFile = async (oldFileName, newFileName) => {
+                try {
+                    const response = await fetch("/rename-file", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ oldFileName, newFileName }),
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Reload the page to show updated file name
+                        window.location.reload();
+                    } else {
+                        alert("Error renaming file: " + result.error);
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error renaming file");
+                }
+            };
+
+            // Delete file function
+            const deleteFile = async (fileName) => {
+                if (!confirm(`Are you sure you want to delete ${fileName}?`)) {
+                    return;
+                }
+
+                // Get the file card element
+                const fileId = `file-${fileName.replace(/[^a-zA-Z0-9]/g, "-")}`;
+                const fileCard = document.getElementById(fileId);
+
+                try {
+                    const response = await fetch("/delete-file", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ fileName }),
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Remove the file card with animation
+                        if (fileCard) {
+                            fileCard.style.opacity = "0";
+                            fileCard.style.transform = "scale(0.8)";
+                            fileCard.style.transition = "all 0.3s ease";
+
+                            setTimeout(() => {
+                                fileCard.remove();
+
+                                // Check if there are any files left
+                                const filesGrid =
+                                    document.getElementById("files-grid");
+                                if (
+                                    filesGrid &&
+                                    filesGrid.children.length === 0
+                                ) {
+                                    // Reload to show empty state
+                                    window.location.reload();
+                                }
+                            }, 300);
+                        }
+
+                        // Optional: Show success message
+                        console.log("File deleted successfully");
+                    } else {
+                        alert("Error deleting file: " + result.error);
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error deleting file");
+                }
+            };
+
+            // Add event listener to file input to change dot color when file is selected
+            document.addEventListener("DOMContentLoaded", () => {
+                const fileInput = document.querySelector("#dropzone-file");
+                const dot = document.querySelector(".dot");
+                const dot2 = document.querySelector(".dot-2");
+
+                if (fileInput) {
+                    fileInput.addEventListener("change", (e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                            // Check file size
+                            const maxSize = 5 * 1024 * 1024;
+                            if (e.target.files[0].size > maxSize) {
+                                alert(
+                                    "File size exceeds 5MB limit. Please select a smaller file."
+                                );
+                                e.target.value = "";
+                                return;
+                            }
+                            // File selected - turn dot green
+                            dot.classList.remove("bg-red-600");
+                            dot2.classList.remove("bg-red-600");
+                            dot.classList.add("bg-emerald-600");
+                            dot2.classList.add("bg-emerald-600");
+                        } else {
+                            // No file selected - turn dot red
+                            dot.classList.remove("bg-emerald-600");
+                            dot2.classList.remove("bg-emerald-600");
+                            dot.classList.add("bg-red-600");
+                            dot2.classList.add("bg-red-600");
+                        }
+                    });
+                }
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
+    </body>
+</html>

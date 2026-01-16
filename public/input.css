@@ -1,0 +1,49 @@
+/*
+To install tailwind CSS Run this in terminal:
+npm install tailwindcss @tailwindcss/cli
+
+To watch Changes in CSS: (in Terminal)
+npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch
+*/
+
+/* Custom fonts url */
+@import url("https://fonts.cdnfonts.com/css/gilroy-bold");
+/*--------------------------------------------------------*/
+
+@import "tailwindcss";
+
+@theme {
+    /* Custom colors */
+    --color-prim: #1c1c1c;
+    --color-sec: #2c2c2c;
+    --color-lead: #212121;
+    --color-charcoal: #333333;
+
+    /* Custom fonts */
+    --font-gilroy-md: "Gilroy-Medium", sans-serif;
+    --font-gilroy-bold: "Gilroy-Bold", sans-serif;
+    --font-gilroy: "Gilroy-Regular", sans-serif;
+}
+
+/* Custom Components */
+@layer components {
+    /* Body div component (styling) */
+    .body {
+        @apply m-0 p-0 box-border font-gilroy font-bold select-none w-screen h-screen bg-gray-200;
+    }
+
+    /* Main div component (styling) */
+    .main-div {
+        @apply select-none w-screen h-screen flex flex-col justify-center items-center bg-prim text-white gap-y-5;
+    }
+
+    /* Button component */
+    .btn {
+        @apply bg-sec active:scale-90 transition-all duration-150 rounded-md cursor-pointer shadow-md flex justify-center items-center font-medium p-1;
+    }
+
+    /* input box component */
+    .inp {
+        @apply bg-sec rounded-md w-10 outline-none text-center p-1;
+    }
+}
